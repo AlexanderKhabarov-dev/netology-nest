@@ -1,8 +1,15 @@
-import { IsString, IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  MaxLength,
+} from 'class-validator';
 
 export class CreateBookDto {
   @IsString()
   @IsNotEmpty()
+  @MaxLength(255, { message: 'Максимальное количество символов 255' })
   readonly title: string;
 
   @IsString()
