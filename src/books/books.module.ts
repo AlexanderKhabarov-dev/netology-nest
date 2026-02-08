@@ -3,7 +3,7 @@ import { BooksService } from './books.service';
 import { BooksController } from './books.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Book, BookSchema } from './entities/book.entity';
-import { NotEmptyStringPipe } from 'src/pipes/not-empty-string.pipe';
+import { NotEmptyStringPipe } from 'src/shared/pipes/not-empty-string.pipe';
 
 @Module({
   imports: [

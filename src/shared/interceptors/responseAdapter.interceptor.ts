@@ -1,5 +1,5 @@
 import { CallHandler, ExecutionContext, NestInterceptor } from '@nestjs/common';
-import { catchError, map, Observable, of } from 'rxjs';
+import { catchError, map, Observable, throwError } from 'rxjs';
 
 export interface Response<T> {
   status: string;
@@ -21,10 +21,7 @@ export class ResponseAdapterInterceptor<T> implements NestInterceptor<
         data,
       })),
       catchError((err: unknown) => {
-        if (err instanceof Error) {
-          return of({ status: 'fail', error: err.message });
-        }
-        return of({ status: 'fail', error: 'Unknown error' });
+        return throwError(() => err);
       }),
     );
   }

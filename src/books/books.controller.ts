@@ -8,15 +8,17 @@ import {
   Delete,
   HttpCode,
   HttpStatus,
-  Query,
+  UseGuards,
 } from '@nestjs/common';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
 import { Book } from './entities/book.entity';
 import { BooksService } from './books.service';
-import { NotEmptyStringPipe } from 'src/pipes/not-empty-string.pipe';
+import { NotEmptyStringPipe } from 'src/shared/pipes/not-empty-string.pipe';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('books')
+@UseGuards(AuthGuard('jwt'))
 export class BooksController {
   constructor(private readonly bookService: BooksService) {}
 
@@ -49,16 +51,4 @@ export class BooksController {
   remove(@Param('id') id: string) {
     return this.bookService.remove(id);
   }
-
-  @Get('pipe')
-  getTestPipeRaw(@Query('name', NotEmptyStringPipe) name: string) {
-    return name;
-  }
-
-  // Тест HttpExceptionFilter
-  // @Get('error/manual')
-  // testManualError() {
-  //   const someData: any = null;
-  //   return someData.title;
-  // }
 }
