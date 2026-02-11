@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  ConflictException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserDocument } from './entities/user.entity';
@@ -6,6 +10,7 @@ import { UserResponseDto } from './dto/user-response.dto';
 import { SigninUserDto } from './dto/signin-user.dto';
 import { compare, hash } from 'bcrypt';
 import { AuthService } from 'src/auth/auth.service';
+import { SignupUserDto } from './dto/signup-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -33,11 +38,18 @@ export class UsersService {
       email: userDoc.email,
       firstName: userDoc.firstName,
       createdAt: userDoc.createdAt,
-      password: userDoc.password,
     };
   }
 
-  async signup(signupUserDto: SigninUserDto): Promise<User> {
+  async signup(signupUserDto: SignupUserDto): Promise<User> {
+    const existingUser = await this.userModel
+      .findOne({ email: signupUserDto.email })
+      .exec();
+
+    if (existingUser) {
+      throw new ConflictException('User with this email already exists');
+    }
+
     const hashedPassword = await hash(signupUserDto.password, 10);
 
     const userData = {

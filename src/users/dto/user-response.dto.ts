@@ -12,7 +12,4 @@ export class UserResponseDto {
 
   @ApiProperty({ example: '2026-02-02T20:00:00.000Z' })
   createdAt?: Date;
-
-  @ApiProperty({ example: 'Barer' })
-  password?: string;
 }
