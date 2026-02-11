@@ -6,6 +6,7 @@ import { BooksModule } from './books/books.module';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
+import { CustomValidatePipe } from './shared/pipes/custom-validation.pipe';
 
 @Module({
   imports: [
@@ -22,6 +23,6 @@ import { UsersModule } from './users/users.module';
     UsersModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, CustomValidatePipe],
 })
 export class AppModule {}

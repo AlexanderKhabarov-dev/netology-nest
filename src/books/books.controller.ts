@@ -9,13 +9,14 @@ import {
   HttpCode,
   HttpStatus,
   UseGuards,
+  UsePipes,
 } from '@nestjs/common';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
 import { Book } from './entities/book.entity';
 import { BooksService } from './books.service';
-import { NotEmptyStringPipe } from 'src/shared/pipes/not-empty-string.pipe';
 import { AuthGuard } from '@nestjs/passport';
+import { CustomValidatePipe } from 'src/shared/pipes/custom-validation.pipe';
 
 @Controller('books')
 @UseGuards(AuthGuard('jwt'))
@@ -24,6 +25,7 @@ export class BooksController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
+  @UsePipes(CustomValidatePipe)
   create(@Body() createBookDto: CreateBookDto): Promise<Book> {
     return this.bookService.create(createBookDto);
   }
@@ -34,11 +36,12 @@ export class BooksController {
   }
 
   @Get('get/:id')
-  findOne(@Param('id', NotEmptyStringPipe) id: string): Promise<Book> {
+  findOne(@Param('id') id: string): Promise<Book> {
     return this.bookService.findOne(id);
   }
 
   @Patch(':id')
+  @UsePipes(CustomValidatePipe)
   update(
     @Param('id') id: string,
     @Body() updateBookDto: UpdateBookDto,

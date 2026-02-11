@@ -1,15 +1,10 @@
-import {
-  IsString,
-  IsNotEmpty,
-  IsNumber,
-  IsOptional,
-  MaxLength,
-} from 'class-validator';
+import { IsString, IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
+import { IsBookTitleValid } from 'src/shared/pipes/custom-validation.pipe';
 
 export class CreateBookDto {
   @IsString()
   @IsNotEmpty()
-  @MaxLength(255, { message: 'Максимальное количество символов 255' })
+  @IsBookTitleValid()
   readonly title: string;
 
   @IsString()
