@@ -1,98 +1,317 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Netology NestJS — учебный REST API + WebSocket
+---
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+## Содержание
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+- [Технологии](#технологии)
+- [Структура проекта](#структура-проекта)
+- [Модули и сервисы](#модули-и-сервисы)
+- [API](#api)
+- [WebSocket](#websocket)
+- [Переменные окружения](#переменные-окружения)
+- [Запуск локально](#запуск-локально)
+- [Запуск через Docker](#запуск-через-docker)
+- [Тесты](#тесты)
 
-## Description
+---
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Технологии
 
-## Project setup
+| Категория | Стек |
+|---|---|
+| Фреймворк | NestJS 11, Express |
+| База данных | MongoDB (Mongoose) |
+| Аутентификация | Passport.js, JWT, bcrypt |
+| WebSocket | Socket.io (`@nestjs/websockets`) |
+| Валидация | class-validator, class-transformer |
+| Документация | Swagger / OpenAPI |
+| Контейнеры | Docker, Docker Compose |
+| Тесты | Jest, Supertest |
+| Линтинг | ESLint, Prettier |
 
-```bash
-$ yarn install
+---
+
+## Структура проекта
+
+```
+netology-nest/
+├── src/
+│   ├── main.ts                        # Точка входа
+│   ├── app.module.ts                  # Корневой модуль
+│   ├── app.controller.ts              # GET / — health-check
+│   │
+│   ├── auth/                          # Аутентификация
+│   │   ├── auth.module.ts
+│   │   ├── auth.service.ts            # Генерация JWT
+│   │   ├── dto/
+│   │   │   └── jwt-payload.dto.ts
+│   │   └── strategies/
+│   │       └── jwt.strategy.ts        # Passport JWT стратегия
+│   │
+│   ├── users/                         # Пользователи
+│   │   ├── users.module.ts
+│   │   ├── users.controller.ts        # /users/signup, /users/signin
+│   │   ├── users.service.ts
+│   │   ├── dto/
+│   │   │   ├── signup-user.dto.ts
+│   │   │   ├── signin-user.dto.ts
+│   │   │   └── user-response.dto.ts
+│   │   └── entities/
+│   │       └── user.entity.ts
+│   │
+│   ├── books/                         # Книги (CRUD)
+│   │   ├── books.module.ts
+│   │   ├── books.controller.ts        # /books — защищённые маршруты
+│   │   ├── books.service.ts
+│   │   ├── dto/
+│   │   │   ├── create-book.dto.ts
+│   │   │   └── update-book.dto.ts
+│   │   └── entities/
+│   │       └── book.entity.ts
+│   │
+│   ├── book-comments/                 # Комментарии к книгам (WebSocket)
+│   │   ├── book-comments.module.ts
+│   │   ├── book-comments.gateway.ts   # Socket.io gateway
+│   │   ├── book-comments.service.ts
+│   │   ├── dto/
+│   │   │   └── create-book-comment.dto.ts
+│   │   └── entities/
+│   │       └── book-comment.entity.ts
+│   │
+│   └── shared/                        # Общие утилиты
+│       ├── filters/
+│       │   └── http-exception.filter.ts   # Глобальный обработчик ошибок
+│       ├── interceptors/
+│       │   ├── logging.interceptor.ts         # Логирование запросов
+│       │   └── responseAdapter.interceptor.ts # Обёртка ответа
+│       └── pipes/
+│           ├── custom-validation.pipe.ts      # Валидация заголовков книг
+│           └── not-empty-string.pipe.ts       # Проверка query-параметров
+│
+├── test/                              # E2E тесты
+│   ├── app.e2e-spec.ts
+│   ├── books.e2e-spec.ts
+│   └── users.e2e-spec.ts
+│
+├── Dockerfile
+├── docker-compose.yml
+├── .env
+└── package.json
 ```
 
-## Compile and run the project
+---
 
-```bash
-# development
-$ yarn run start
+## Модули и сервисы
 
-# watch mode
-$ yarn run start:dev
+### AuthModule
 
-# production mode
-$ yarn run start:prod
+Отвечает за выдачу JWT-токенов. Использует Passport.js с `jwt`-стратегией.
+
+- `AuthService.login(payload)` — создаёт токен со сроком действия 24 часа
+- `JwtStrategy` — извлекает и валидирует токен из заголовка `Authorization: Bearer <token>`
+
+### UsersModule
+
+Регистрация и вход пользователей.
+
+- `UsersService.signup(dto)` — создаёт пользователя, хеширует пароль (bcrypt, 10 раундов)
+- `UsersService.signin(dto)` — проверяет пароль и возвращает JWT-токен
+
+Поля сущности `User`: `email` (уникальный), `firstName`, `password`, `createdAt`
+
+### BooksModule
+
+CRUD-ресурс для книг. Все маршруты защищены JWT-гвардом (`JwtAuthGuard`).
+
+- `BooksService` — стандартный CRUD через Mongoose (`create`, `findAll`, `findOne`, `update`, `remove`)
+
+Поля сущности `Book`: `title`, `author`, `pages`
+
+### BookCommentsModule
+
+Реальное время через Socket.io. Gateway слушает namespace `/comments`.
+
+| Событие | Описание |
+|---|---|
+| `subscribeToBook` | Подписаться на комментарии книги |
+| `unsubscribeFromBook` | Отписаться от книги |
+| `addComment` | Добавить комментарий (транслируется подписчикам) |
+| `getAllComments` | Получить все комментарии книги |
+
+### Shared-утилиты
+
+| Утилита | Поведение |
+|---|---|
+| `LoggingInterceptor` | Логирует каждый запрос с временем выполнения |
+| `ResponseAdapterInterceptor` | Оборачивает успешные ответы: `{ status: 'success', data: ... }` |
+| `HttpExceptionFilter` | Возвращает ошибки в формате `{ status: 'fail', data: { error, path }, code }` |
+| `CustomValidatePipe` | Проверяет заголовок книги: длина 3–100 символов, запрещённые слова |
+| `NotEmptyStringPipe` | Отклоняет пустые query-параметры |
+
+---
+
+## API
+
+### Пользователи
+
+| Метод | URL | Описание | Auth |
+|---|---|---|---|
+| POST | `/users/signup` | Регистрация | — |
+| POST | `/users/signin` | Вход, получение токена | — |
+
+**Пример регистрации:**
+
+```json
+POST /users/signup
+{
+  "email": "user@example.com",
+  "firstName": "Иван",
+  "lastName": "Иванов",
+  "password": "secret123"
+}
 ```
 
-## Run tests
+**Пример входа:**
 
-```bash
-# unit tests
-$ yarn run test
+```json
+POST /users/signin
+{
+  "email": "user@example.com",
+  "password": "secret123"
+}
 
-# e2e tests
-$ yarn run test:e2e
-
-# test coverage
-$ yarn run test:cov
+// Ответ:
+{
+  "status": "success",
+  "data": { "access_token": "eyJ..." }
+}
 ```
 
-## Deployment
+### Книги
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+| Метод | URL | Описание | Auth |
+|---|---|---|---|
+| POST | `/books` | Создать книгу | JWT |
+| GET | `/books` | Список всех книг | JWT |
+| GET | `/books/get/:id` | Получить книгу по ID | JWT |
+| PATCH | `/books/:id` | Обновить книгу | JWT |
+| DELETE | `/books/:id` | Удалить книгу | JWT |
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+Передавайте токен в заголовке: `Authorization: Bearer <access_token>`
 
-```bash
-$ yarn install -g @nestjs/mau
-$ mau deploy
+### Health-check
+
+```
+GET /  →  Hello World!
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+---
 
-## Resources
+## WebSocket
 
-Check out a few resources that may come in handy when working with NestJS:
+Подключение: `ws://localhost:3000/comments`
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+```js
+import { io } from 'socket.io-client';
 
-## Support
+const socket = io('http://localhost:3000/comments');
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+// Подписаться на комментарии книги
+socket.emit('subscribeToBook', { bookId: '<id>' });
 
-## Stay in touch
+// Добавить комментарий
+socket.emit('addComment', { bookId: '<id>', comment: 'Отличная книга!' });
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+// Получить все комментарии
+socket.emit('getAllComments', { bookId: '<id>' });
+```
 
-## License
+---
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+## Переменные окружения
+
+Создайте файл `.env` в корне проекта:
+
+```env
+# Строка подключения к MongoDB
+DB_URI=mongodb://root:root@localhost:27017/?authSource=admin
+
+# Порт приложения
+PORT=3000
+
+# Секрет для подписи JWT (замените на безопасное значение)
+MY_SECRET_JWT_KEY=your-secret-key
+```
+
+---
+
+## Запуск локально
+
+### Требования
+
+- Node.js >= 20
+- Yarn
+- MongoDB (локально или через Docker)
+
+### Установка зависимостей
+
+```bash
+yarn install
+```
+
+### Запуск в режиме разработки
+
+```bash
+yarn start:dev
+```
+
+Приложение доступно по адресу: `http://localhost:3000`
+
+### Сборка и запуск продакшн-версии
+
+```bash
+yarn build
+yarn start:prod
+```
+
+---
+
+## Запуск через Docker
+
+Docker Compose поднимает три контейнера: **приложение**, **MongoDB** и **Mongo Express** (веб-интерфейс БД).
+
+```bash
+docker compose up --build
+```
+
+| Сервис | URL |
+|---|---|
+| NestJS API | http://localhost:3000 |
+| Mongo Express | http://localhost:8081 |
+| MongoDB | localhost:27017 |
+
+Учётные данные Mongo Express: `mongoexpressuser` / `mongoexpresspass`
+
+Остановить:
+
+```bash
+docker compose down
+```
+
+---
+
+## Тесты
+
+```bash
+# Юнит-тесты
+yarn test
+
+# Юнит-тесты в режиме наблюдения
+yarn test:watch
+
+# Покрытие кода
+yarn test:cov
+
+# E2E-тесты
+yarn test:e2e
+```
