@@ -61,21 +61,24 @@ describe('BooksService (сервис книг)', () => {
   });
 
   describe('create (создание)', () => {
-    it('должен создать и вернуть новую книгу', async () => {
+    it('должен создать экземпляр с dto, вызвать save() и вернуть книгу', async () => {
       const dto = { title: 'Clean Code', author: 'R. Martin', pages: 200 };
+      const saveMock = jest.fn().mockResolvedValue(mockBook);
+      mockBookModel.mockImplementationOnce(() => ({ save: saveMock }));
 
       const result = await service.create(dto);
 
       expect(mockBookModel).toHaveBeenCalledWith(dto);
+      expect(saveMock).toHaveBeenCalled();
       expect(result).toEqual(mockBook);
     });
   });
 
   describe('findAll (список всех)', () => {
-    it('должен вернуть массив книг', async () => {
+    it('должен вызвать find() без фильтров и вернуть массив книг', async () => {
       const result = await service.findAll();
 
-      expect(mockBookModel.find).toHaveBeenCalled();
+      expect(mockBookModel.find).toHaveBeenCalledWith();
       expect(result).toEqual([mockBook]);
     });
   });
